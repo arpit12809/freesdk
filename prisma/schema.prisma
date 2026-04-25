@@ -1,0 +1,59 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  description    String
+  posterUrl      String
+  trailerUrl     String?  // NEW: YouTube trailer URL
+  type           String   // "MOVIE" or "SERIES"
+  category       String   // "BOLLYWOOD", "HOLLYWOOD", "KDRAMA", "CDRAMA", "ADULT"
+  genre          String
+  releaseYear    Int
+  streamingLinks String   // JSON string of legal links
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  watchlistedBy  Watchlist[]
+  ratings        Rating[]
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  name       String?
+  isVerified Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  watchlist  Watchlist[]
+  ratings    Rating[]
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  score     Int      // 1 to 10
+  userId    String
+  movieId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+}
+
+model Watchlist {
+  id        String @id @default(cuid())
+  userId    String
+  movieId   String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+}

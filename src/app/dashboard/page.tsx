@@ -2,13 +2,13 @@
 "use client";
 export const dynamic = "force-dynamic";
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { Bookmark, LogOut, Star, Clock, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import RatingControl from "@/components/RatingControl";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { data: session, status } = useSession();
   const [watchlist, setWatchlist] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +117,6 @@ export default function DashboardPage() {
                       <p className="text-red-500 text-xs font-black uppercase tracking-widest">{movie.category} • {movie.releaseYear}</p>
                     </div>
                     
-                    {/* Integrated Rating Feature */}
                     <div className="bg-black/40 p-4 rounded-2xl border border-white/5 inline-block w-full md:w-auto">
                       <RatingControl movieId={movie.id} />
                     </div>
@@ -131,8 +130,15 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-bold animate-pulse uppercase tracking-widest italic">Loading Dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

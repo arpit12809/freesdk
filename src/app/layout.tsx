@@ -9,12 +9,16 @@ export const metadata: Metadata = {
   description: "Discover and watch movies from legal streaming sources.",
 };
 
+import { Suspense } from "react";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#09090b] text-white font-sans antialiased">
         <AuthProvider>
-          <Navbar />
+          <Suspense fallback={<div className="h-20 bg-black/50 animate-pulse" />}>
+            <Navbar />
+          </Suspense>
           <main>{children}</main>
         </AuthProvider>
       </body>

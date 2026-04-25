@@ -1,18 +1,16 @@
 
 "use client";
 export const dynamic = "force-dynamic";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Trash2, Pencil, PlusCircle, LayoutDashboard, LogOut, ShieldCheck, X } from "lucide-react";
-
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export default function AdminPage() {
+function AdminContent() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
-  // ... rest of state
   const [movies, setMovies] = useState<any[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -23,15 +21,11 @@ export default function AdminPage() {
   const [links, setLinks] = useState([{ platform: "", url: "" }]);
 
   useEffect(() => {
-    // If user is logged in, check if they are the admin
     if (status === "authenticated") {
-      if (session?.user?.email !== "2004arpit@gmail.com") {
-        router.push("/"); // Kick out non-admins
+      if (session?.user?.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        router.push("/");
         return;
       }
-    } else if (status === "unauthenticated") {
-       // Optional: Allow them to see the password prompt even if not logged in, 
-       // OR redirect to login. Let's keep your password prompt for now.
     }
 
     const auth = localStorage.getItem("admin_auth");
@@ -320,5 +314,13 @@ export default function AdminPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-bold animate-pulse uppercase tracking-widest italic">Entering Studio...</div>}>
+      <AdminContent />
+    </Suspense>
   );
 }

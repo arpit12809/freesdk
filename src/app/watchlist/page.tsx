@@ -1,25 +1,27 @@
 
 "use client";
 export const dynamic = "force-dynamic";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { Bookmark, SearchX, ArrowRight, Play } from "lucide-react";
 
-export default function WatchlistPage() {
-  const [movies, setMovies] = useState([]);
+function WatchlistContent() {
+  const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/watchlist").then(res => res.json()).then(data => {
-      setMovies(data);
+      if (Array.isArray(data)) {
+        setMovies(data);
+      }
       setLoading(false);
     });
   }, []);
 
-  if (loading) return <div className="min-h-screen pt-40 text-center font-black text-2xl animate-pulse">Loading Your Collection...</div>;
+  if (loading) return <div className="min-h-screen bg-black pt-40 text-center text-white font-black text-2xl animate-pulse">Loading Your Collection...</div>;
 
   return (
-    <div className="min-h-screen pt-40 px-10 pb-20 bg-black">
+    <div className="min-h-screen pt-40 px-10 pb-20 bg-black text-white">
       <div className="flex items-end justify-between mb-16 max-w-7xl mx-auto">
         <div className="space-y-2">
           <div className="flex items-center gap-3 text-red-500 font-black tracking-widest uppercase text-sm">
@@ -48,8 +50,6 @@ export default function WatchlistPage() {
               <Link href={`/movie/${movie.slug}`} key={movie.id} className="group relative">
                 <div className="aspect-[2/3] overflow-hidden rounded-[2rem] border border-white/5 bg-zinc-900 transition-all duration-500 group-hover:rounded-xl group-hover:scale-95 group-hover:rotate-1 shadow-2xl">
                   <img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" />
-                  
-                  {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
                     <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500 space-y-3">
                       <div className="flex gap-2">
@@ -66,5 +66,13 @@ export default function WatchlistPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function WatchlistPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black pt-40 text-center text-white font-black text-2xl animate-pulse italic uppercase tracking-tighter">Accessing Vault...</div>}>
+      <WatchlistContent />
+    </Suspense>
   );
 }
